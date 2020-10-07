@@ -200,7 +200,7 @@ switch ($data['message']['chat']['type'])
                         $result['message'] = str_replace($value,'[' . $type . ']',$result['message']);
                     }
 
-                    $send_message = "[回复给[CQ:at,qq={$result['user_id']}]: " . mb_substr($result['message'],0,20,'UTF-8') . "]\n" . $send_message;
+                    $send_message = "[回复给 " . Storage::get_card($result['user_id'],$qq_group) . "]\n[原消息摘要：\n" /*[CQ:at,qq={$result['user_id']}]:*/ . mb_substr($result['message'],0,20,'UTF-8') . "]\n\n" . $send_message;
                     break;
                 case 'forward_from_user':
                     $send_message = "[转发自用户 " . $item['nickname'] . ")]\n" . $send_message;
