@@ -50,7 +50,7 @@ class GroupMessage
             }
         }
 
-        $message = '<b>' . Storage::get_card($data['user_id'],$data['group_id']) . "</b>"/*[{$data['user_id']}]*/ . $header . $data['message'];
+        $message = '<b>' . Storage::get_card($data['user_id'],$data['group_id']) . "</b>" . $header . $data['message'];
 
         /**
          * 为第一张图片添加标题

@@ -30,12 +30,11 @@ Method::log(0,'WebHook Receive Data: ' . json_encode($data));
 
 /**
  * 判断操作人是不是 Bot 管理员
- */
-/**
-if (!((@$data['callback_query']['from']['id'] == CONFIG['admin']['chat_id']) || (@$data['message']['from']['id'] == CONFIG['admin']['chat_id'])))
-{
-    die;
-}
+ *
+ * if (!((@$data['callback_query']['from']['id'] == CONFIG['admin']['chat_id']) || (@$data['message']['from']['id'] == CONFIG['admin']['chat_id'])))
+ * {
+ *    die;
+ * }
  */
 
 /**
@@ -208,11 +207,11 @@ switch ($data['message']['chat']['type'])
                             }
                             $result['message'] = str_replace($value,'[' . $type . ']',$result['message']);
                         }
-                        $send_message = "[回复给@" . Storage::get_card($result['user_id'],$qq_group) . "]\n[原消息摘要：\n" /*[CQ:at,qq={$result['user_id']}]:*/ . mb_substr($result['message'],0,20,'UTF-8') . "]\n\n" . $send_message;
+                        $send_message = "[回复给@" . Storage::get_card($result['user_id'],$qq_group) . "]\n[原消息摘要：\n" . mb_substr($result['message'],0,20,'UTF-8') . "]\n\n" . $send_message;
                     } else {
                         $reply_nickname = $data['message']['reply_to_message']['from']['first_name'] . $data['message']['reply_to_message']['from']['last_name'];
                         if (empty($data['message']['reply_to_message']['text'])) $reply_message = "非文本消息"; else $reply_message = mb_substr($data['message']['reply_to_message']['text'],0,20,'UTF-8');
-                        $send_message = "[回复给@" . $reply_nickname . "]\n[原消息摘要：\n" /*[CQ:at,qq={$result['user_id']}]:*/ . $reply_message . "]\n\n" . $send_message;
+                        $send_message = "[回复给@" . $reply_nickname . "]\n[原消息摘要：\n" . $reply_message . "]\n\n" . $send_message;
                     }
                     break;
                 case 'forward_from_user':
@@ -253,7 +252,7 @@ switch ($data['message']['chat']['type'])
          */
         if ($qq_result['status'] !== 'ok' || $qq_result['retcode'] !== 0)
         {
-            /**
+            /*
             error_log('Telegram Result: ' . Method::curl("https://api.telegram.org/bot" .
                     CONFIG['bot']['message'] . "/sendMessage?chat_id={$chat_id}&reply_to_message_id={$tg_message_id}&text=" .
                     urlencode('☑消息已发送') . "&reply_markup=" . json_encode([
@@ -385,7 +384,7 @@ switch ($data['message']['chat']['type'])
          */
         if ($qq_result['status'] !== 'ok' || $qq_result['retcode'] !== 0)
         {
-            /**
+            /*
             error_log('Telegram Result: ' . Method::curl("https://api.telegram.org/bot" .
                     CONFIG['bot']['message'] . "/sendMessage?chat_id=" . CONFIG['admin']['send_to'] .
                     "&reply_to_message_id={$data['message']['message_id']}&text=" . urlencode('☑消息已发送') . "&reply_markup=" . json_encode([
