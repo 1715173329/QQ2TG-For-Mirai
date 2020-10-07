@@ -31,10 +31,12 @@ Method::log(0,'WebHook Receive Data: ' . json_encode($data));
 /**
  * 判断操作人是不是 Bot 管理员
  */
+/**
 if (!((@$data['callback_query']['from']['id'] == CONFIG['admin']['chat_id']) || (@$data['message']['from']['id'] == CONFIG['admin']['chat_id'])))
 {
     die;
 }
+ */
 
 /**
  * 撤回消息按钮处理
@@ -80,12 +82,18 @@ if (isset($data['callback_query']['data']))
             break;
 
         case 'new_chat':
-            Method::add_placeholder($return['user_id'],$data['callback_query']['message']['message_id']);
             /**
-             * 更改消息内容
+             * 判断操作人是不是 Bot 管理员
              */
-            Method::curl("https://api.telegram.org/bot" . CONFIG['bot']['message'] . "/editMessageText?chat_id={$data['callback_query']['message']['chat']['id']}&message_id={$data['callback_query']['message']['message_id']}&text=" . urlencode('📤请直接回复该消息发起私聊'));
-            break;
+            if ($data['callback_query']['from']['id'] == CONFIG['admin']['chat_id'] || $data['message']['from']['id'] == CONFIG['admin']['chat_id'])
+            {
+                Method::add_placeholder($return['user_id'],$data['callback_query']['message']['message_id']);
+                /**
+                 * 更改消息内容
+                 */
+                Method::curl("https://api.telegram.org/bot" . CONFIG['bot']['message'] . "/editMessageText?chat_id={$data['callback_query']['message']['chat']['id']}&message_id={$data['callback_query']['message']['message_id']}&text=" . urlencode('📤请直接回复该消息发起私聊'));
+            }
+        break;
     }
     die;
 }
@@ -168,39 +176,44 @@ switch ($data['message']['chat']['type'])
                     break;
                 case 'reply':
                     $result = Storage::get_message_content($item['tg_group_id'],$item['message_id']);
-
-                    preg_match_all("/\[CQ(.*?)\]/",$result['message'],$cq_code);
-                    $cq_code = $cq_code[0];
-
-                    foreach ($cq_code as $value)
+                    if (!empty(Storage::get_card($result['user_id'],$qq_group)))
                     {
-                        $temp = explode(',',$value);
-                        if (str_replace('[CQ:','',$temp[0]) != 'face')
-                        {
-                            $data['message'] = str_replace($value,'',$data['message']) . ' ';
-                        } else {
-                            $temp[1] = str_replace(']','',str_replace('id=','',$temp[1]));
-                            $data['message'] = str_replace($value,Method::handle_emoji_cq_code($temp[1]),$data['message']) . ' ';
-                        }
-                        switch (str_replace('[CQ:','',$temp[0]))
-                        {
-                            case 'image':
-                                $type = '图片';
-                                break;
-                            case 'at':
-                                $type = '@' . Storage::get_card(str_replace('qq=','',str_replace(']','',$temp[1])),$qq_group);
-                                break;
-                            case 'share':
-                                $type = '分享消息';
-                                break;
-                            default:
-                                $type = '某卡片';
-                                break;
-                        }
-                        $result['message'] = str_replace($value,'[' . $type . ']',$result['message']);
-                    }
+                        preg_match_all("/\[CQ(.*?)\]/",$result['message'],$cq_code);
+                        $cq_code = $cq_code[0];
 
-                    $send_message = "[回复给 " . Storage::get_card($result['user_id'],$qq_group) . "]\n[原消息摘要：\n" /*[CQ:at,qq={$result['user_id']}]:*/ . mb_substr($result['message'],0,20,'UTF-8') . "]\n\n" . $send_message;
+                        foreach ($cq_code as $value)
+                        {
+                            $temp = explode(',',$value);
+                            if (str_replace('[CQ:','',$temp[0]) != 'face')
+                            {
+                                $data['message'] = str_replace($value,'',$data['message']) . ' ';
+                            } else {
+                                $temp[1] = str_replace(']','',str_replace('id=','',$temp[1]));
+                                $data['message'] = str_replace($value,Method::handle_emoji_cq_code($temp[1]),$data['message']) . ' ';
+                            }
+                            switch (str_replace('[CQ:','',$temp[0]))
+                            {
+                                case 'image':
+                                    $type = "图片";
+                                    break;
+                                case 'at':
+                                    $type = '@' . Storage::get_card(str_replace('qq=','',str_replace(']','',$temp[1])),$qq_group);
+                                    break;
+                                case 'share':
+                                    $type = "分享消息";
+                                    break;
+                                default:
+                                    $type = "某卡片";
+                                    break;
+                            }
+                            $result['message'] = str_replace($value,'[' . $type . ']',$result['message']);
+                        }
+                        $send_message = "[回复给@" . Storage::get_card($result['user_id'],$qq_group) . "]\n[原消息摘要：\n" /*[CQ:at,qq={$result['user_id']}]:*/ . mb_substr($result['message'],0,20,'UTF-8') . "]\n\n" . $send_message;
+                    } else {
+                        $reply_nickname = $data['message']['reply_to_message']['from']['first_name'] . $data['message']['reply_to_message']['from']['last_name'];
+                        if (empty($data['message']['reply_to_message']['text'])) $reply_message = "非文本消息"; else $reply_message = mb_substr($data['message']['reply_to_message']['text'],0,20,'UTF-8');
+                        $send_message = "[回复给@" . $reply_nickname . "]\n[原消息摘要：\n" /*[CQ:at,qq={$result['user_id']}]:*/ . $reply_message . "]\n\n" . $send_message;
+                    }
                     break;
                 case 'forward_from_user':
                     $send_message = "[转发自用户 " . $item['nickname'] . ")]\n" . $send_message;
@@ -213,6 +226,11 @@ switch ($data['message']['chat']['type'])
                     break;
             }
         }
+
+        /**
+          * 拼接消息发送者用户名
+          */
+        $send_message = $data['message']['from']['first_name'] . " " . $data['message']['from']['last_name'] . ":\n" . $send_message;
 
         /**
          * 发送消息
@@ -257,6 +275,14 @@ switch ($data['message']['chat']['type'])
 
     case 'private':
         personal:
+        /**
+         * 判断操作人是不是 Bot 管理员
+         */
+        if ($data['callback_query']['from']['id'] == CONFIG['admin']['chat_id'] || $data['message']['from']['id'] == CONFIG['admin']['chat_id'])
+        {
+            die;
+        }
+
         /**
          * 初始化参数
          */
