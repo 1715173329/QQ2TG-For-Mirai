@@ -233,8 +233,9 @@ switch ($data['message']['chat']['type'])
         /**
          * Telegram 撤回按钮
          */
-        if ($qq_result['status'] == 'ok' || $qq_result['retcode'] == 0)
+        if ($qq_result['status'] !== 'ok' || $qq_result['retcode'] !== 0)
         {
+            /**
             error_log('Telegram Result: ' . Method::curl("https://api.telegram.org/bot" .
                     CONFIG['bot']['message'] . "/sendMessage?chat_id={$chat_id}&reply_to_message_id={$tg_message_id}&text=" .
                     urlencode('☑消息已发送') . "&reply_markup=" . json_encode([
@@ -245,6 +246,7 @@ switch ($data['message']['chat']['type'])
                             ],],],
                     ])));
         } else {
+             */
             error_log('Telegram Result: ' . Method::curl("https://api.telegram.org/bot" .
                     CONFIG['bot']['message'] . "/sendMessage?chat_id={$chat_id}&reply_to_message_id={$tg_message_id}&text=" .
                     urlencode('❌消息发送失败, 错误码 ' . $qq_result['retcode'])));
@@ -355,8 +357,9 @@ switch ($data['message']['chat']['type'])
         /**
          * Telegram 撤回按钮
          */
-        if ($qq_result['status'] == 'ok' || $qq_result['retcode'] == 0)
+        if ($qq_result['status'] !== 'ok' || $qq_result['retcode'] !== 0)
         {
+            /**
             error_log('Telegram Result: ' . Method::curl("https://api.telegram.org/bot" .
                     CONFIG['bot']['message'] . "/sendMessage?chat_id=" . CONFIG['admin']['send_to'] .
                     "&reply_to_message_id={$data['message']['message_id']}&text=" . urlencode('☑消息已发送') . "&reply_markup=" . json_encode([
@@ -367,6 +370,7 @@ switch ($data['message']['chat']['type'])
                             ],],],
                     ])));
         } else {
+             */
             error_log('Telegram Result: ' . Method::curl("https://api.telegram.org/bot" .
                     CONFIG['bot']['message'] . "/sendMessage?chat_id=" . CONFIG['admin']['send_to'] .
                     "&reply_to_message_id={$data['message']['message_id']}&text=" . urlencode('❌消息发送失败, 错误码 ' . $qq_result['retcode'])));
