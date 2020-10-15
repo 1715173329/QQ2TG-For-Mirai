@@ -92,7 +92,7 @@ if (isset($data['callback_query']['data']))
                  */
                 Method::curl("https://api.telegram.org/bot" . CONFIG['bot']['message'] . "/editMessageText?chat_id={$data['callback_query']['message']['chat']['id']}&message_id={$data['callback_query']['message']['message_id']}&text=" . urlencode('📤请直接回复该消息发起私聊'));
             }
-        break;
+            break;
     }
     die;
 }
@@ -209,7 +209,7 @@ switch ($data['message']['chat']['type'])
                         }
                         $send_message = "[回复给@" . Storage::get_card($result['user_id'],$qq_group) . "]\n[原消息摘要：\n" . mb_substr($result['message'],0,20,'UTF-8') . "]\n\n" . $send_message;
                     } else {
-                        $reply_nickname = $data['message']['reply_to_message']['from']['first_name'] . $data['message']['reply_to_message']['from']['last_name'];
+                        $reply_nickname = $data['message']['reply_to_message']['from']['first_name'] . " " . $data['message']['reply_to_message']['from']['last_name'];
                         if (empty($data['message']['reply_to_message']['text'])) $reply_message = "非文本消息"; else $reply_message = mb_substr($data['message']['reply_to_message']['text'],0,20,'UTF-8');
                         $send_message = "[回复给@" . $reply_nickname . "]\n[原消息摘要：\n" . $reply_message . "]\n\n" . $send_message;
                     }
